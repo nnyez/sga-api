@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "teacher_entries",
+  "info": {
+    "singularName": "teacher-entry",
+    "pluralName": "teacher-entries",
+    "displayName": "Teacher Entry",
+    "description": "Fila de datos por docente y asignatura evaluada"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "teacher_name": {
+      "type": "string",
+      "required": true
+    },
+    "subject": {
+      "type": "string"
+    },
+    "group": {
+      "type": "string"
+    },
+    "cycle": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "format_manager": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::format-manager.format-manager",
+      "inversedBy": "teacher_entries",
+      "required": true
+    },
+    "field_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::field-value.field-value",
+      "mappedBy": "teacher_entry"
+    }
+  }
+}

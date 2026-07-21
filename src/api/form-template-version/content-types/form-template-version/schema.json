@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_template_versions",
+  "info": {
+    "singularName": "form-template-version",
+    "pluralName": "form-template-versions",
+    "displayName": "Form Template Version"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "label_template_version": {
+      "type": "string"
+    },
+    "template_version": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "form_type": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-type.form-type",
+      "inversedBy": "form_template_versions"
+    },
+    "format_managers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::format-manager.format-manager",
+      "mappedBy": "form_template_version"
+    },
+    "form_sections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::form-section.form-section",
+      "mappedBy": "form_template_versions"
+    }
+  }
+}

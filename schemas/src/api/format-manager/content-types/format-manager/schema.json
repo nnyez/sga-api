@@ -1,0 +1,65 @@
+{
+  "kind": "collectionType",
+  "collectionName": "format_managers",
+  "info": {
+    "singularName": "format-manager",
+    "pluralName": "format-managers",
+    "displayName": "Format Manager",
+    "description": "Instancia de evaluación: un período, un jefe de área, una carrera"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "area": {
+      "type": "string"
+    },
+    "career": {
+      "type": "string"
+    },
+    "period": {
+      "type": "string",
+      "required": true
+    },
+    "jefe_area": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "completed",
+        "in_correction"
+      ],
+      "default": "draft"
+    },
+    "report_date": {
+      "type": "date"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "template_version": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-template-version.form-template-version",
+      "inversedBy": "format_managers",
+      "required": true
+    },
+    "teacher_entries": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::teacher-entry.teacher-entry",
+      "mappedBy": "format_manager"
+    },
+    "section_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::section-value.section-value",
+      "mappedBy": "format_manager"
+    }
+  }
+}

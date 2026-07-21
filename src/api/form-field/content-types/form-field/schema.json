@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_fields",
+  "info": {
+    "singularName": "form-field",
+    "pluralName": "form-fields",
+    "displayName": "Form Field"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "label_form_field": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer"
+    },
+    "field_type": {
+      "type": "enumeration",
+      "enum": [
+        "select",
+        "rating",
+        "textarea",
+        "text"
+      ]
+    },
+    "options": {
+      "type": "json"
+    },
+    "required": {
+      "type": "boolean"
+    },
+    "group": {
+      "type": "string"
+    },
+    "form_sections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::form-section.form-section",
+      "inversedBy": "form_fields"
+    },
+    "field_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::field-value.field-value",
+      "mappedBy": "form_field"
+    },
+    "render_as": {
+      "type": "enumeration",
+      "enum": [
+        "grid_cell",
+        "observation_block"
+      ]
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_template_versions",
+  "info": {
+    "singularName": "form-template-version",
+    "pluralName": "form-template-versions",
+    "displayName": "Form Template Version",
+    "description": "Versión de la estructura de un tipo de formulario (v2025, v2026, etc.)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "version_label": {
+      "type": "string",
+      "required": true
+    },
+    "name": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "form_type": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-type.form-type",
+      "inversedBy": "template_versions"
+    },
+    "form_section_versions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::form-section-version.form-section-version",
+      "mappedBy": "template_version"
+    },
+    "format_managers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::format-manager.format-manager",
+      "mappedBy": "template_version"
+    }
+  }
+}

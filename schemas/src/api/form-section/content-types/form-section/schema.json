@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_sections",
+  "info": {
+    "singularName": "form-section",
+    "pluralName": "form-sections",
+    "displayName": "Form Section",
+    "description": "Sección reutilizable (Información General, Antecedentes, Parámetros SB, etc.)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "label_name": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "order": {
+      "type": "integer",
+      "required": true
+    },
+    "section_type": {
+      "type": "enumeration",
+      "enum": [
+        "header_table",
+        "description_text",
+        "free_text",
+        "parameter_table",
+        "teacher_observation",
+        "signature"
+      ],
+      "required": true
+    },
+    "version_links": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::form-section-version.form-section-version",
+      "mappedBy": "section"
+    },
+    "field_links": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::form-field-section.form-field-section",
+      "mappedBy": "section"
+    },
+    "section_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::section-value.section-value",
+      "mappedBy": "section"
+    }
+  }
+}

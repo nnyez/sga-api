@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "section_values",
+  "info": {
+    "singularName": "section-value",
+    "pluralName": "section-values",
+    "displayName": "Section Value"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "value": {
+      "type": "text"
+    },
+    "form_section": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-section.form-section",
+      "inversedBy": "section_values"
+    },
+    "format_manager": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::format-manager.format-manager",
+      "inversedBy": "section_values"
+    }
+  }
+}

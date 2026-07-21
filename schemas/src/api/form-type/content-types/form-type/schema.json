@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_types",
+  "info": {
+    "singularName": "form-type",
+    "pluralName": "form-types",
+    "displayName": "Form Type",
+    "description": "Categoría de formulario/reporte (Inicial, Seguimiento, Visita, Final)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "label_type": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "form_template_versions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::form-template-version.form-template-version",
+      "mappedBy": "form_type"
+    },
+    "format_managers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::format-manager.format-manager",
+      "mappedBy": "form_type"
+    }
+  }
+}

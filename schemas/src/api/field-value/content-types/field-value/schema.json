@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "field_values",
+  "info": {
+    "singularName": "field-value",
+    "pluralName": "field-values",
+    "displayName": "Field Value",
+    "description": "Valor EAV de un campo dinámico para una entrada de docente"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "value": {
+      "type": "text"
+    },
+    "needs_correction": {
+      "type": "boolean",
+      "default": false
+    },
+    "correction_comment": {
+      "type": "text"
+    },
+    "field": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-field.form-field",
+      "inversedBy": "field_values",
+      "required": true
+    },
+    "teacher_entry": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::teacher-entry.teacher-entry",
+      "inversedBy": "field_values",
+      "required": true
+    }
+  }
+}

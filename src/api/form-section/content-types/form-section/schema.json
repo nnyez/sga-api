@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_sections",
+  "info": {
+    "singularName": "form-section",
+    "pluralName": "form-sections",
+    "displayName": "Form Section"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "label_form_section": {
+      "type": "string"
+    },
+    "form_section": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer"
+    },
+    "section_type": {
+      "type": "enumeration",
+      "enum": [
+        "header_table",
+        "description_text",
+        "free_text",
+        "parameter_table",
+        "teacher_observation",
+        "signature"
+      ]
+    },
+    "form_fields": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::form-field.form-field",
+      "mappedBy": "form_sections"
+    },
+    "section_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::section-value.section-value",
+      "mappedBy": "form_section"
+    },
+    "form_template_versions": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::form-template-version.form-template-version",
+      "inversedBy": "form_sections"
+    }
+  }
+}

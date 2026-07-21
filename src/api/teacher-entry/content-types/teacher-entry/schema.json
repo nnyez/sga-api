@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "teacher_entries",
+  "info": {
+    "singularName": "teacher-entry",
+    "pluralName": "teacher-entries",
+    "displayName": "Teacher Entry"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "teacher_name": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "group": {
+      "type": "string"
+    },
+    "cycle": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "field_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::field-value.field-value",
+      "mappedBy": "teacher_entry"
+    },
+    "format_manager": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::format-manager.format-manager",
+      "inversedBy": "teacher_entries"
+    }
+  }
+}

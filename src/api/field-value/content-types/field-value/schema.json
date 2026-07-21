@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "field_values",
+  "info": {
+    "singularName": "field-value",
+    "pluralName": "field-values",
+    "displayName": "Field Value"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "value": {
+      "type": "text"
+    },
+    "form_field": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-field.form-field",
+      "inversedBy": "field_values"
+    },
+    "teacher_entry": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::teacher-entry.teacher-entry",
+      "inversedBy": "field_values"
+    }
+  }
+}

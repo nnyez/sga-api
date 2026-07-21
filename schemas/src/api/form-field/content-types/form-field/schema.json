@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_fields",
+  "info": {
+    "singularName": "form-field",
+    "pluralName": "form-fields",
+    "displayName": "Form Field",
+    "description": "Campo/parámetro dinámico reutilizable"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "label_name": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "order": {
+      "type": "integer",
+      "required": true
+    },
+    "field_type": {
+      "type": "enumeration",
+      "enum": [
+        "text",
+        "rating",
+        "select",
+        "textarea"
+      ],
+      "required": true
+    },
+    "options": {
+      "type": "json",
+      "description": "Para field_type=select: arreglo de opciones. Ej: [\"Sí\",\"No\",\"Parcial\"]"
+    },
+    "required": {
+      "type": "boolean",
+      "default": false
+    },
+    "group": {
+      "type": "string",
+      "description": "Agrupación visual. Ej: \"SB\", \"VA\", null"
+    },
+    "render_as": {
+      "type": "enumeration",
+      "enum": [
+        "grid_cell",
+        "observation_block"
+      ],
+      "default": "grid_cell"
+    },
+    "section_links": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::form-field-section.form-field-section",
+      "mappedBy": "field"
+    },
+    "field_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::field-value.field-value",
+      "mappedBy": "field"
+    }
+  }
+}

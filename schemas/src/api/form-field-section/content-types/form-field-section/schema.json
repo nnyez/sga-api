@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_field_sections",
+  "info": {
+    "singularName": "form-field-section",
+    "pluralName": "form-field-sections",
+    "displayName": "Form Field Section",
+    "description": "Puente N:N entre section y field (qué campos pertenecen a cada sección)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "section": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-section.form-section",
+      "inversedBy": "field_links",
+      "required": true
+    },
+    "field": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-field.form-field",
+      "inversedBy": "section_links",
+      "required": true
+    }
+  }
+}

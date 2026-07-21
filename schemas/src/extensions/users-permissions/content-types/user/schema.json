@@ -1,0 +1,20 @@
+{
+  "attributes": {
+    "area": {
+      "type": "string"
+    },
+    "role_type": {
+      "type": "enumeration",
+      "enum": [
+        "admin",
+        "jefe_area"
+      ]
+    },
+    "format_managers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::format-manager.format-manager",
+      "mappedBy": "user"
+    }
+  }
+}

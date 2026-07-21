@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "form_section_versions",
+  "info": {
+    "singularName": "form-section-version",
+    "pluralName": "form-section-versions",
+    "displayName": "Form Section Version",
+    "description": "Puente N:N entre template_version y section (qué secciones incluye cada versión)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "template_version": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-template-version.form-template-version",
+      "inversedBy": "form_section_versions",
+      "required": true
+    },
+    "section": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-section.form-section",
+      "inversedBy": "version_links",
+      "required": true
+    }
+  }
+}

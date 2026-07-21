@@ -1,0 +1,65 @@
+{
+  "kind": "collectionType",
+  "collectionName": "format_managers",
+  "info": {
+    "singularName": "format-manager",
+    "pluralName": "format-managers",
+    "displayName": "Format Manager"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "area": {
+      "type": "string"
+    },
+    "career": {
+      "type": "string"
+    },
+    "status_form": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "completed",
+        "archived"
+      ]
+    },
+    "report_date": {
+      "type": "date"
+    },
+    "form_template_version": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-template-version.form-template-version",
+      "inversedBy": "format_managers"
+    },
+    "section_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::section-value.section-value",
+      "mappedBy": "format_manager"
+    },
+    "form_type": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-type.form-type",
+      "inversedBy": "format_managers"
+    },
+    "teacher_entries": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::teacher-entry.teacher-entry",
+      "mappedBy": "format_manager"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "format_managers"
+    },
+    "user_id": {
+      "type": "integer"
+    }
+  }
+}

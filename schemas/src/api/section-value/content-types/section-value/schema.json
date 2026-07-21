@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "section_values",
+  "info": {
+    "singularName": "section-value",
+    "pluralName": "section-values",
+    "displayName": "Section Value",
+    "description": "Contenido de texto libre de una sección (Antecedentes, Objetivos, Análisis, etc.)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "value": {
+      "type": "richtext"
+    },
+    "section": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::form-section.form-section",
+      "inversedBy": "section_values",
+      "required": true
+    },
+    "format_manager": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::format-manager.format-manager",
+      "inversedBy": "section_values",
+      "required": true
+    }
+  }
+}
