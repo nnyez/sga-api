@@ -17,6 +17,7 @@
   "dependencies": {
     "@strapi/plugin-cloud": "5.49.0",
     "@strapi/plugin-users-permissions": "5.49.0",
+    "@strapi/provider-email-nodemailer": "^5.50.2",
     "@strapi/strapi": "5.49.0",
     "better-sqlite3": "12.8.0",
     "pdfmake": "^0.3.11",

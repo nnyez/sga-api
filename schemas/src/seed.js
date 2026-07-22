@@ -2,8 +2,11 @@
  * Script de seed para Strapi 5
  * Pobla los 4 tipos de informe con su estructura inicial (v1).
  *
+ * Portable: se puede ejecutar desde cualquier directorio.
+ * Internamente resuelve la raíz del proyecto con __dirname.
+ *
  * Uso:
- *   cd backend-strapi && node schemas/src/seed.js
+ *   node /ruta/a/backend-strapi/schemas/src/seed.js
  */
 
 function toSlug(str) {
@@ -17,9 +20,15 @@ function toSlug(str) {
 }
 
 async function seed() {
-  // Load .env manually (dotenv is a transitive pnpm dep, not directly accessible)
+  const path = require('path');
   const fs = require('fs');
-  const envPath = require('path').resolve(__dirname, '../../.env');
+
+  // ── Resolve project root regardless of cwd ──
+  const projectRoot = path.resolve(__dirname, '../../');
+  process.chdir(projectRoot);
+
+  // Load .env manually (dotenv is a transitive pnpm dep, not directly accessible)
+  const envPath = path.resolve(projectRoot, '.env');
   const envContent = fs.readFileSync(envPath, 'utf-8');
   for (const line of envContent.split('\n')) {
     const trimmed = line.trim();
@@ -32,7 +41,7 @@ async function seed() {
   }
 
   const { createStrapi } = require('@strapi/strapi');
-  const strapi = createStrapi();
+  const strapi = createStrapi({ appDir: projectRoot });
   await strapi.load();
 
   const db = strapi.db.query.bind(strapi.db);

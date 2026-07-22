@@ -44,15 +44,14 @@ strapi-schemas/
 
 ## Seed
 
-Puebla `backend-strapi/.tmp/data.db` con 4 tipos de informe, cada uno con su estructura:
+Puebla `backend-strapi/.tmp/data.db` con 4 tipos de informe, cada uno con su estructura.
+
+El script es **portable**: se puede ejecutar desde cualquier directorio. Internamente usa `__dirname` para resolver la raíz del proyecto y `process.chdir()` + `appDir` para que Strapi cargue sus configuraciones correctamente.
 
 ```bash
-cd backend-strapi
-rm -f .tmp/data.db
-
-# Los configs .ts requieren compilarse a .js en config/ para el seed
-# El seed.js ya incluye carga manual de .env y usa createStrapi()
-NODE_PATH=$(pwd)/node_modules node ../schemas/src/seed.js
+# Desde cualquier ubicación
+rm -f /ruta/a/backend-strapi/.tmp/data.db
+node /ruta/a/backend-strapi/schemas/src/seed.js
 ```
 
 ### Lo que crea el seed

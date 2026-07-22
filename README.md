@@ -32,6 +32,7 @@ API REST y panel de administracion para la gestion de informes de Jefatura de Ar
   - [Base de datos](#base-de-datos)
   - [CORS](#cors)
   - [Panel de administracion](#panel-de-administracion)
+  - [Email (notificaciones SMTP)](#email-notificaciones-smtp)
 - [Content Types](#content-types)
 - [Patron EAV](#patron-eav)
 - [Endpoints de la API](#endpoints-de-la-api)
@@ -115,6 +116,14 @@ Crear un archivo `.env` en la raiz del proyecto basado en `.env.example`.
 | `FLAG_NPS` | No | `true` | `true` | Manual | `config/admin.ts` | Feature flag NPS |
 | `FLAG_PROMOTE_EE` | No | `true` | `true` | Manual | `config/admin.ts` | Feature flag Enterprise |
 | `FLAG_DOC_LINKS` | No | `true` | `true` | Manual | `config/admin.ts` | Feature flag doc links |
+| `SMTP_HOST` | Si | `smtp.gmail.com` | `smtp.tudominio.com` | Manual | `config/plugins.ts` | Host del servidor SMTP |
+| `SMTP_PORT` | Si | `465` | `465` o `587` | Manual | `config/plugins.ts` | Puerto SMTP |
+| `SMTP_SECURE` | Si | `true` | `true` o `false` | Manual | `config/plugins.ts` | `true` = SSL (465), `false` = STARTTLS (587) |
+| `SMTP_USERNAME` | Si | — | — | Manual | `config/plugins.ts` | Usuario SMTP. Gmail requiere App Password |
+| `SMTP_PASSWORD` | Si | — | — | Manual | `config/plugins.ts` | Contraseña o App Password SMTP |
+| `DEFAULT_FROM_EMAIL` | No | `noreply@ups.edu.ec` | `noreply@dominio.com` | Manual | `config/plugins.ts` | Direccion remitente por defecto |
+| `DEFAULT_REPLY_TO` | No | `noreply@ups.edu.ec` | `noreply@dominio.com` | Manual | `config/plugins.ts` | Direccion de respuesta por defecto |
+| `FRONTEND_URL` | No | — | `https://app.dominio.com` | Manual | `lifecycles.ts` | URL del frontend (opcional, para enlaces en correos) |
 
 ### Generacion de secretos
 
@@ -253,6 +262,143 @@ rest: {
   withCount: true,
 },
 ```
+
+### Email (notificaciones SMTP)
+
+Configurado en `config/plugins.ts` con provider `nodemailer` y `@strapi/provider-email-nodemailer`. Se activa automaticamente via lifecycle hook (`src/api/format-manager/content-types/format-manager/lifecycles.ts`) cuando un jefe de area finaliza un informe (`draft` → `completed`), enviando correos al jefe que lo completo y a todos los administradores.
+
+#### Configuracion en `config/plugins.ts`
+
+```typescript
+email: {
+  config: {
+    provider: 'nodemailer',
+    providerOptions: {
+      host: env('SMTP_HOST', 'smtp.gmail.com'),
+      port: env.int('SMTP_PORT', 465),
+      secure: env.bool('SMTP_SECURE', true),
+      auth: {
+        user: env('SMTP_USERNAME'),
+        pass: env('SMTP_PASSWORD'),
+      },
+    },
+    settings: {
+      defaultFrom: env('DEFAULT_FROM_EMAIL', 'noreply@ups.edu.ec'),
+      defaultReplyTo: env('DEFAULT_REPLY_TO', 'noreply@ups.edu.ec'),
+    },
+  },
+},
+```
+
+#### Variables de entorno
+
+| Variable | Obligatorio | Defecto | Descripcion |
+|----------|-------------|---------|-------------|
+| `SMTP_HOST` | Si | `smtp.gmail.com` | Host del servidor SMTP |
+| `SMTP_PORT` | Si | `465` | Puerto SMTP (465 SSL, 587 STARTTLS, 25 plano) |
+| `SMTP_SECURE` | Si | `true` | `true` para TLS implicito (puerto 465), `false` para STARTTLS (puerto 587) |
+| `SMTP_USERNAME` | Si | — | Usuario SMTP (correo completo para Gmail/Outlook) |
+| `SMTP_PASSWORD` | Si | — | Contrasena SMTP. **Gmail requiere App Password** (no la contrasena regular) |
+| `DEFAULT_FROM_EMAIL` | No | `noreply@ups.edu.ec` | Direccion remitente por defecto |
+| `DEFAULT_REPLY_TO` | No | `noreply@ups.edu.ec` | Direccion de respuesta por defecto |
+| `FRONTEND_URL` | No | — | URL del frontend. Si se define, se incluye un enlace al informe en el correo. Vacio = sin enlace |
+
+#### Proveedores compatibles
+
+| Proveedor | `SMTP_HOST` | `SMTP_PORT` | `SMTP_SECURE` |
+|-----------|-------------|-------------|:-:|
+| Gmail | `smtp.gmail.com` | `465` | `true` |
+| Outlook / Office 365 | `smtp.office365.com` | `587` | `false` |
+| Mailtrap (pruebas) | `smtp.mailtrap.io` | `2525` | `false` |
+| SendGrid | `smtp.sendgrid.net` | `587` | `false` |
+| SMTP generico | `smtp.tudominio.com` | `587` | `false` |
+
+> **Gmail requiere App Password**: Activar [verificacion en dos pasos](https://support.google.com/accounts/answer/185839) y generar una [App Password](https://myaccount.google.com/apppasswords) de 16 caracteres. No usar la contrasena regular de Gmail.
+
+#### Gmail paso a paso
+
+1. Activar verificacion en dos pasos en la cuenta de Gmail.
+2. Generar un App Password en https://myaccount.google.com/apppasswords seleccionando "Correo" y "Otra" (nombre: "Strapi SGA").
+3. Copiar la contrasena de 16 caracteres generada.
+4. Asignar en `.env`:
+   ```bash
+   SMTP_USERNAME=micorreo@gmail.com
+   SMTP_PASSWORD=abcd efgh ijkl mnop
+   ```
+5. Puerto 465 con `SMTP_SECURE=true` es la configuracion recomendada.
+
+#### Outlook / Office 365
+
+```bash
+SMTP_HOST=smtp.office365.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USERNAME=usuario@outlook.com
+SMTP_PASSWORD=contrasena  # o App Password si aplica
+```
+
+#### Mailtrap (pruebas)
+
+```bash
+SMTP_HOST=smtp.mailtrap.io
+SMTP_PORT=2525
+SMTP_SECURE=false
+SMTP_USERNAME=tu-usuario
+SMTP_PASSWORD=tu-contrasena
+```
+
+#### SendGrid
+
+```bash
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USERNAME=apikey
+SMTP_PASSWORD=SG.tu-api-key
+```
+
+#### Proveedor SMTP generico
+
+```bash
+SMTP_HOST=smtp.tudominio.com
+SMTP_PORT=587
+SMTP_SECURE=false        # false para STARTTLS (587/25), true para SSL (465)
+SMTP_USERNAME=no-reply@tudominio.com
+SMTP_PASSWORD=contrasena
+```
+
+#### Verificar conexion
+
+```bash
+# Desde el panel admin: Settings → Email → Test connection
+# O enviar un correo de prueba desde el mismo panel
+```
+
+Si la conexion falla, revisar los logs de Strapi:
+
+```bash
+pnpm logs strapi | grep email
+# o si usas PM2:
+pm2 logs strapi | grep email
+```
+
+#### Formato de los correos
+
+Ambos correos (jefe de area y administrador) usan HTML con:
+
+- Membreted de "Sistema de Gestion de Servicio Comunitario — UPS"
+- Barra superior azul UPS (`#003B71`)
+- Tabla resumen con tipo de informe, estado, responsable y area
+- Firma institucional con ano actual
+
+El asunto sigue el formato: `Informe Finalizado — {Tipo de Informe}`.
+
+Si `FRONTEND_URL` esta vacio, el correo no incluye enlace al informe.
+
+#### Notas tecnicas
+
+- Los correos se envian secuencialmente (no en paralelo). Si hay muchos administradores, considerar activar `pool: true` en `providerOptions` en `config/plugins.ts`.
+- Si el jefe de area tambien es administrador, no recibe correos duplicados (el lifecycle omite `admin.email === entry.user.email`).
 
 ---
 
@@ -625,10 +771,12 @@ El script de seed se encuentra en `schemas/src/seed.js`.
 
 ### Como ejecutar
 
+El script es **portable**: se puede ejecutar desde cualquier directorio, no solo desde `backend-strapi/`. Internamente resuelve la raíz del proyecto usando `__dirname` y cambia al directorio correcto automáticamente.
+
 ```bash
-# Desde la raiz del proyecto (entorno desarrollo)
-rm -f backend-strapi/.tmp/data.db
-node schemas/src/seed.js
+# Desde cualquier ubicación
+rm -f /ruta/a/backend-strapi/.tmp/data.db
+node /ruta/a/backend-strapi/schemas/src/seed.js
 ```
 
 > **Advertencia**: Esto elimina todos los datos existentes en la base de datos.
@@ -925,7 +1073,7 @@ backend-strapi/
 │   ├── api.ts            # Config REST (defaultLimit, maxLimit)
 │   ├── database.ts       # Conexion BD (SQLite, Postgres, MySQL)
 │   ├── middlewares.ts    # CORS, logger, security, body parser
-│   ├── plugins.ts        # Plugins habilitados (vacio)
+│   ├── plugins.ts        # Plugins habilitados (email SMTP)
 │   └── server.ts         # Host, puerto, app keys
 ├── database/
 │   └── migrations/       # Migraciones personalizadas (vacio)
@@ -1229,6 +1377,18 @@ pm2 stop strapi
 cp /backups/data_reciente.db .tmp/data.db
 pm2 start strapi
 ```
+
+### Error al enviar correos
+
+**Sintomas**: Strapi no envia correos al finalizar un informe. En los logs aparece `[Email notification] Error sending:`.
+
+- **Credenciales SMTP incorrectas**: Verificar `SMTP_USERNAME` y `SMTP_PASSWORD`. Gmail requiere App Password de 16 caracteres, no la contraseña regular.
+- **Puerto bloqueado**: El firewall corporativo puede bloquear el puerto 465. Probar con puerto 587 y `SMTP_SECURE=false`.
+- **Faltan variables de entorno**: Verificar que `.env` contiene todas las variables SMTP.
+  ```bash
+  grep -E "^(SMTP_|DEFAULT_FROM|DEFAULT_REPLY|FRONTEND_URL)" .env
+  ```
+- **El lifecycle no se dispara**: Verificar que el informe cambia de `draft` a `completed` y que el usuario tiene un email asignado.
 
 ### Error 502 en produccion
 - CORS mal configurado: verificar `config/middlewares.ts`
