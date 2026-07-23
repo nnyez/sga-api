@@ -6,7 +6,7 @@
  * Internamente resuelve la raíz del proyecto con __dirname.
  *
  * Uso:
- *   node /ruta/a/backend-strapi/schemas/src/seed.js
+ *   npx tsx /ruta/a/backend-strapi/schemas/src/seed.js
  */
 
 function toSlug(str) {
@@ -40,8 +40,51 @@ async function seed() {
     if (!process.env[key]) process.env[key] = value;
   }
 
+  // ── Pre-compile .ts config files to .js ──
+  const ts = require('typescript');
+  const configDir = path.join(projectRoot, 'config');
+  const tempDist = path.join(projectRoot, '.tmp', 'compiled-config');
+  const tempConfigDir = path.join(tempDist, 'config');
+  const tempSrcDir = path.join(tempDist, 'src');
+  fs.mkdirSync(tempConfigDir, { recursive: true });
+
+  // Symlink src/api from real project so strapi finds content types
+  if (!fs.existsSync(tempSrcDir)) {
+    fs.symlinkSync(path.join(projectRoot, 'src'), tempSrcDir, 'junction');
+  }
+
+  for (const file of fs.readdirSync(configDir)) {
+    if (!file.endsWith('.ts')) continue;
+    const source = fs.readFileSync(path.join(configDir, file), 'utf-8');
+    const result = ts.transpileModule(source, {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2019,
+        esModuleInterop: true,
+        strict: false,
+        skipLibCheck: true,
+        moduleResolution: ts.ModuleResolutionKind.Node,
+      },
+    });
+    let compiled = result.outputText;
+    // database.ts uses __dirname to locate the SQLite file.
+    // After compilation __dirname refers to the temp distDir,
+    // not the real project root. Replace the relative traversal
+    // with a process.cwd()-based absolute path.
+    if (file === 'database.ts') {
+      compiled = compiled.replace(
+        /(path_\d+\.default)\.join\(__dirname,\s*'\.\.',\s*'\.\.',\s*/,
+        '$1.resolve(process.cwd(),'
+      );
+    }
+    fs.writeFileSync(
+      path.join(tempConfigDir, file.replace(/\.ts$/, '.js')),
+      compiled
+    );
+  }
+
   const { createStrapi } = require('@strapi/strapi');
-  const strapi = createStrapi({ appDir: projectRoot });
+  const strapi = createStrapi({ appDir: projectRoot, distDir: tempDist });
   await strapi.load();
 
   const db = strapi.db.query.bind(strapi.db);
@@ -272,6 +315,10 @@ async function seed() {
   }
 
   console.log('\nSeed completado exitosamente.');
+
+  // Clean up temp compiled config
+  fs.rmSync(tempDist, { recursive: true, force: true });
+
   process.exit(0);
 }
 
