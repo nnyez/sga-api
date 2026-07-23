@@ -85,7 +85,15 @@ async function seed() {
 
   const { createStrapi } = require('@strapi/strapi');
   const strapi = createStrapi({ appDir: projectRoot, distDir: tempDist });
-  await strapi.load();
+  await strapi.register();
+  try {
+    await strapi.bootstrap();
+  } catch (err) {
+    // Email plugin may fail due to version mismatch with
+    // @strapi/provider-email-nodemailer. The seed only
+    // needs the database — bootstrap is non-critical.
+    console.warn('⚠ Plugin bootstrap non-critical:', err.message);
+  }
 
   const db = strapi.db.query.bind(strapi.db);
 

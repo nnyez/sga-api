@@ -69,12 +69,12 @@ pnpm dev
 
 En la primera ejecucion, crear el administrador del panel en `/admin`. Luego ejecutar el seed para poblar los tipos de formulario:
 
-> **Importante**: El seed debe ejecutarse **antes** del build de produccion, ya que requiere que los archivos de configuracion TypeScript esten disponibles. En desarrollo (`pnpm dev`) funciona directamente. En un entorno de produccion compilado, ver la seccion [Seed en produccion](#seed-en-produccion).
+> **Importante**: El seed requiere ejecutarse con `npx tsx` ya que transpila automaticamente los archivos TypeScript de `config/` y carga los content types de `src/api/`. Funciona tanto en desarrollo como en entornos compilados de produccion (ver [Seed en produccion](#seed-en-produccion)).
 
 ```bash
 # Detener Strapi, eliminar BD y resembrar (entorno desarrollo)
 rm -f .tmp/data.db
-node schemas/src/seed.js
+npx tsx schemas/src/seed.js
 pnpm dev
 ```
 
@@ -776,31 +776,26 @@ El script es **portable**: se puede ejecutar desde cualquier directorio, no solo
 ```bash
 # Desde cualquier ubicación
 rm -f /ruta/a/backend-strapi/.tmp/data.db
-node /ruta/a/backend-strapi/schemas/src/seed.js
+npx tsx /ruta/a/backend-strapi/schemas/src/seed.js
 ```
 
 > **Advertencia**: Esto elimina todos los datos existentes en la base de datos.
 
 ### Seed en produccion
 
-El seed usa `createStrapi()` para conectarse a la base de datos, pero Node.js no puede cargar directamente archivos de configuracion TypeScript (`.ts`). En un entorno compilado para produccion se requieren dos pasos adicionales:
+En un entorno compilado (post `pnpm build`), ejecutar el seed con `npx tsx`:
 
 ```bash
-# 1. Copiar configuraciones compiladas (necesario solo la primera vez)
-cp dist/config/*.js config/
-
-# 2. Instalar tsx para ejecutar TypeScript
-pnpm add -D tsx
-
-# 3. Ejecutar seed
+cd /var/www/sga/backend-strapi
 rm -f .tmp/data.db
 npx tsx schemas/src/seed.js
-
-# 4. Limpiar archivos temporales (opcional, los .js en config/ se ignoran en produccion)
-# rm config/admin.js config/api.js config/database.js config/middlewares.js config/plugins.js config/server.js
+pnpm build
+pm2 restart strapi
 ```
 
-> **Alternativa recomendada**: Ejecutar el seed **antes** del build de produccion, en un entorno de desarrollo, y luego copiar la base de datos resultante al servidor de produccion. Esto evita la dependencia de `tsx` y la copia de configuraciones.
+> El seed compila automaticamente los archivos `.ts` de `config/` a `.js` en memoria usando el compilador de TypeScript, por lo que no requiere pasos manuales adicionales.
+
+> **Alternativa recomendada**: Ejecutar el seed **antes** del build de produccion, en un entorno de desarrollo, y luego copiar la base de datos resultante al servidor de produccion.
 
 ---
 
@@ -913,7 +908,7 @@ curl -X POST http://localhost:1337/api/form-types \
 ```bash
 cd /var/www/sga/backend-strapi
 rm -f .tmp/data.db
-node schemas/src/seed.js
+npx tsx schemas/src/seed.js
 pnpm build
 pm2 restart strapi
 ```
@@ -1398,4 +1393,4 @@ pm2 start strapi
 ### Seed falla
 - Verificar que el archivo `.env` existe y tiene las variables requeridas
 - Strapi debe poder conectarse a la base de datos
-- Eliminar la BD y reintentar: `rm -f .tmp/data.db && node schemas/src/seed.js`
+- Eliminar la BD y reintentar: `rm -f .tmp/data.db && npx tsx schemas/src/seed.js`

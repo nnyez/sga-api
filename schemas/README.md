@@ -51,7 +51,7 @@ El script es **portable**: se puede ejecutar desde cualquier directorio. Interna
 ```bash
 # Desde cualquier ubicación
 rm -f /ruta/a/backend-strapi/.tmp/data.db
-node /ruta/a/backend-strapi/schemas/src/seed.js
+npx tsx /ruta/a/backend-strapi/schemas/src/seed.js
 ```
 
 ### Lo que crea el seed
