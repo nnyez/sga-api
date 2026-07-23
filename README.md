@@ -663,6 +663,78 @@ El plugin `users-permissions` se extiende con campos personalizados en `src/exte
 | `admin` | CRUD usuarios, crear informes (wizard), archivar/revertir informes, acceso a `/usuarios` |
 | `jefe_area` | Llenar informes asignados (draft -> completed), no puede crear usuarios ni informes nuevos |
 
+> La creacion de roles de Strapi y la asignacion de permisos se detalla a continuacion.
+
+### Roles de Strapi (plugin users-permissions)
+
+El sistema utiliza dos roles del plugin `users-permissions` ademas del rol `authenticated` por defecto. La aplicacion frontend mapea `role_type` al ID del rol:
+
+```typescript
+const ROLE_MAP: Record<string, number> = {
+  admin: 3,
+  jefe_area: 4,
+};
+```
+
+> **Importante**: Estos IDs se asignan automaticamente al crear los roles. Si el orden de creacion es diferente, los IDs cambiaran y habra que actualizar `ROLE_MAP` en el frontend.
+
+#### Crear roles en Strapi
+
+1. Iniciar Strapi y acceder a `http://localhost:1337/admin`
+2. Ir a **Settings → Users & Permissions Plugin → Roles**
+3. Crear el rol **Admin**:
+   - Name: `Admin`
+   - Description: `Administradores del sistema SGA`
+4. Crear el rol **Jefe de Area**:
+   - Name: `Jefe de Area`
+   - Description: `Jefes de area que llenan informes`
+5. Verificar los IDs asignados:
+
+```bash
+curl http://localhost:1337/api/users-permissions/roles
+```
+
+#### Permisos por rol
+
+Asignar los siguientes permisos en **Settings → Users & Permissions Plugin → Roles → [Rol] → Permissions**:
+
+**Rol: Admin**
+
+| Accion | Content Type / Ruta | Permiso |
+|--------|--------------------|---------|
+| `find`, `findone` | `form-type` | ✅ (solo lectura) |
+| `find`, `findone` | `form-template-version` | ✅ (solo lectura) |
+| `find`, `findone` | `form-section` | ✅ (solo lectura) |
+| `find`, `findone` | `form-field` | ✅ (solo lectura) |
+| `create`, `find`, `findone`, `update`, `delete` | `format-manager` | ✅ (asignar y gestionar informes) |
+| `find`, `findone` | `teacher-entry` | ✅ (solo lectura) |
+| `find`, `findone` | `field-value` | ✅ (solo lectura) |
+| `find`, `findone` | `section-value` | ✅ (solo lectura) |
+| `create`, `find`, `findone`, `update`, `deleteme` | `users` | ✅ (CRUD usuarios) |
+| `find`, `findone` | `roles` | ✅ (solo lectura) |
+| `callback`, `connect`, `emailconfirmation`, `forgotpassword`, `register`, `resetpassword`, `sendemailconfirmation` | `auth` | ✅ |
+| `find`, `findone` | `userspermissions` | ✅ |
+| `generate` | `pdf` | ✅ |
+| `send` | `email` | ✅ |
+
+**Rol: Jefe de Area**
+
+| Accion | Content Type / Ruta | Permiso |
+|--------|--------------------|---------|
+| `find`, `findone` | `form-type` | ✅ (solo lectura) |
+| `find`, `findone` | `form-template-version` | ✅ (solo lectura) |
+| `find`, `findone` | `form-section` | ✅ (solo lectura) |
+| `find`, `findone` | `form-field` | ✅ (solo lectura) |
+| `find`, `findone`, `update` | `format-manager` | ✅ (ver y cambiar estado draft→completed) |
+| `create`, `find`, `findone`, `update`, `delete` | `teacher-entry` | ✅ (CRUD filas de docentes en sus informes) |
+| `create`, `find`, `findone`, `update`, `delete` | `field-value` | ✅ (llenar campos del formulario) |
+| `create`, `find`, `findone`, `update`, `delete` | `section-value` | ✅ (llenar secciones de texto) |
+| `find`, `findone` | `users` | ✅ (solo lectura) |
+| `find`, `findone` | `roles` | ✅ (solo lectura) |
+| `callback`, `connect`, `emailconfirmation`, `forgotpassword`, `register`, `resetpassword`, `sendemailconfirmation` | `auth` | ✅ |
+| `generate` | `pdf` | ✅ |
+| `send` | `email` | ✅ |
+
 ### Flujo de autenticacion
 
 1. El frontend envia `POST /api/auth/local` con `identifier` y `password`
@@ -683,9 +755,11 @@ En la primera ejecucion del sistema, el panel de Strapi no tiene ningun administ
 
 Este paso solo es necesario una vez. No se puede realizar via API porque el sistema aun no tiene configuradas las claves de autenticacion.
 
-#### Administradores de la aplicacion (usuarios con rol admin)
+ #### Administradores de la aplicacion (usuarios con rol admin)
 
-Los usuarios que administran el sistema desde el frontend (con `role_type = admin`) se crean mediante el endpoint de registro de la API y luego se cambia su rol:
+Los usuarios que administran el sistema desde el frontend (con `role_type = admin`) se crean en dos pasos: registro basico y luego asignacion de campos personalizados.
+
+> El endpoint `POST /api/auth/local/register` solo acepta `username`, `email` y `password`. Los campos personalizados (`area`, `role_type`) deben asignarse via `PUT /api/users/:id`.
 
 **Paso 1: Crear el usuario via API**
 
@@ -695,40 +769,25 @@ curl -X POST http://localhost:1337/api/auth/local/register \
   -d '{
     "username": "admin_principal",
     "email": "admin@ups.edu.ec",
-    "password": "PasswordSegura123!",
-    "area": "Jefatura de Sistemas",
-    "role_type": "jefe_area"
+    "password": "PasswordSegura123!"
   }'
 ```
 
-> El registro asigna automaticamente el rol `authenticated` de Strapi y el `role_type` enviado en la solicitud. Por defecto se usa `jefe_area` para que el usuario pueda iniciar sesion, pero aun no tiene permisos de admin.
+La respuesta incluye el `id` del usuario creado.
 
-**Paso 2: Cambiar el rol a admin**
+**Paso 2: Asignar area, role_type y rol de Strapi desde el panel**
 
 Desde el panel de Strapi (`/admin`):
 
 1. Ir a **Content Manager → User** (o **Users** segun la configuracion)
-2. Buscar el usuario creado
-3. Cambiar el campo `role_type` de `jefe_area` a `admin`
+2. Buscar el usuario creado y abrirlo
+3. Asignar los campos:
+   - `area`: Area o departamento (ej: "Jefatura de Sistemas")
+   - `role_type`: `admin` (o `jefe_area` segun corresponda)
+   - `role`: `Admin` (el rol de Strapi creado anteriormente, no el `Authenticated` por defecto)
 4. Guardar
 
-O alternativamente, via API (requiere autenticacion de un admin de Strapi):
-
-```bash
-# Obtener el ID del usuario
-curl -X GET http://localhost:1337/api/users \
-  -H "Authorization: Bearer <strapi_admin_token>"
-
-# Actualizar el role_type
-curl -X PUT http://localhost:1337/api/users/<id> \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <strapi_admin_token>" \
-  -d '{
-    "role_type": "admin"
-  }'
-```
-
-> **Nota**: El usuario creado via `register` tiene `confirmed: false` por defecto. Para habilitar confirmacion automatica, configurar en el panel Strapi: **Settings → Advanced → Enable signup** y opcionalmente deshabilitar el envio de email de confirmacion en entornos controlados.
+> El usuario se crea con `confirmed: false` por defecto. Para habilitar confirmacion automatica, ir a **Settings → Users & Permissions Plugin → Advanced → Enable signup** y deshabilitar el envio de email de confirmacion.
 
 ---
 
